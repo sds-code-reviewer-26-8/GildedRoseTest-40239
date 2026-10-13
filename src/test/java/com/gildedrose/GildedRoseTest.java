@@ -3,7 +3,12 @@ package com.gildedrose;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class GildedRoseTest {
 
@@ -12,8 +17,10 @@ class GildedRoseTest {
     private static final String BACKSTAGE = "Backstage passes to a TAFKAL80ETC concert";
     private static final String SULFURAS = "Sulfuras, Hand of Ragnaros";
 
+    private final ItemRepository repository = mock(ItemRepository.class);
+
     private void updateOneDay(Item... items) {
-        ItemRepository repository = new InMemoryItemRepository(items);
+        when(repository.findAll()).thenReturn(Arrays.asList(items));
         new GildedRose(repository).updateQuality();
     }
 
@@ -292,5 +299,15 @@ class GildedRoseTest {
 
         assertItem(vest, 9, 19);
         assertItem(brie, 4, 11);
+    }
+
+    @Test
+    @DisplayName("갱신된 아이템을 Repository에 저장하도록 요청한다")
+    void updatedItems_areSavedToRepository() {
+        Item vest = new Item(VEST, 10, 20);
+
+        updateOneDay(vest);
+
+        verify(repository).saveAll(Arrays.asList(vest));
     }
 }
